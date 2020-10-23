@@ -6,7 +6,7 @@ class Window(QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowTitle('using Labels')
-        self.setGeometry(50, 50, 350, 350)
+        self.setGeometry(800, 50, 500, 500)
         self.UI()
 
     def UI(self):
