@@ -32,4 +32,3 @@
         self.group.addButton(self.male, 0)
         self.group.addButton(self.female, 1)
 ```
-

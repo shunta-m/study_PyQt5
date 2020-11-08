@@ -21,7 +21,13 @@ class Window(QWidget):
         self.show()
 
     def messageBox(self):
-        mbox = QMessageBox.question(self, "Warning!!", "Are you sure to exit", QMessageBox.Yes | QMessageBox.No | QMessageBox.Cancel, QMessageBox.No)
+        # mbox = QMessageBox.question(self, "Warning!!", "Are you sure to exit", QMessageBox.Yes | QMessageBox.No | QMessageBox.Cancel, QMessageBox.No)
+        # if mbox == QMessageBox.Yes:
+        #     sys.exit()
+        # elif mbox == QMessageBox.No:
+        #     print("You clicked No Button")
+        mbox = QMessageBox.information(self, "Information", "You Logged Out!")
+
 
 def main():
     App = QApplication(sys.argv)
