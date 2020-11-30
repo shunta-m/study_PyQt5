@@ -41,6 +41,10 @@ class Window(QMainWindow):
         tb.addAction(exitTb)
         exitTb.triggered.connect(self.exitFunc)
         tb.actionTriggered.connect(self.btnFunc)
+
+        self.combo = QComboBox()
+        self.combo.addItems(["Spiderman", "Superman", "Batman"])
+        tb.addWidget(self.combo)
         self.show()
 
     def exitFunc(self):
