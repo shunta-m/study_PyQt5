@@ -28,6 +28,19 @@ class Window(QMainWindow):
         # exit_.setIcon(QIcon("icons/exit.png"))
         exit_.triggered.connect(self.exitFunc)
         file.addAction(exit_)
+        ####################ToolBar###################
+        tb = self.addToolBar("My Toolbar")
+        tb.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
+        newTb = QAction(QIcon("icons/folder.png"), "New", self)
+        tb.addAction(newTb)
+        openTb = QAction(QIcon("icons/empty.png"), "Open", self)
+        tb.addAction(openTb)
+        saveTb = QAction(QIcon("icons/save.png"), "Save", self)
+        tb.addAction(saveTb)
+        exitTb = QAction(QIcon("icons/exit.png"), "Exit", self)
+        tb.addAction(exitTb)
+        exitTb.triggered.connect(self.exitFunc)
+        tb.actionTriggered.connect(self.btnFunc)
         self.show()
 
     def exitFunc(self):
@@ -35,6 +48,14 @@ class Window(QMainWindow):
                                        QMessageBox.No)
         if mbox == QMessageBox.Yes:
             sys.exit()
+
+    def btnFunc(self, btn):
+        if btn.text() == "New":
+            print("You clicked New")
+        elif btn.text() == "Open":
+            print("You cliked Open")
+        else:
+            print("You clicked Save")
 
 
 def main():
