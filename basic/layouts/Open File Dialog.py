@@ -34,8 +34,8 @@ class Window(QWidget):
         self.show()
 
     def openFile(self):
-        url, _ = QFileDialog.getOpenFileName(self, "Open a file", "", "All Files(*);;*txt;;*py")
-        print(url)
+        url, ok = QFileDialog.getOpenFileName(self, "Open a file", "", "All Files(*);;*txt;;*py")
+        print(url, ok)
         with open(url, "r") as f:
             content = f.read()
             self.editor.setText(content)

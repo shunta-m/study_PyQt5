@@ -12,9 +12,10 @@ class Window(QWidget):
 
     def UI(self):
         formLayout = QFormLayout()
-        # formLayout.setRowWrapPolicy(QFormLayout.WrapAllRows)
+        formLayout.setRowWrapPolicy(QFormLayout.WrapAllRows)
         name_txt = QLabel("Name: ")
         name_input = QLineEdit()
+
         pass_txt = QLabel("Password :")
         pass_input = QLineEdit()
         hbox = QHBoxLayout()
