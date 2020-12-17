@@ -240,10 +240,10 @@ class UpdateEmployee(QWidget):
         """Upload employee image"""
         global default_img
         size = (120, 120)
-        self.file_name, ok = QFileDialog.getOpenFileName(self, "Upload Image", "", "Image Files(*.jpg *.png)")
+        file_name, ok = QFileDialog.getOpenFileName(self, "Upload Image", "", "Image Files(*.jpg *.png)")
         if ok:
-            default_img = Path(self.file_name).name
-            img = Image.open(self.file_name)
+            default_img = Path(file_name).name
+            img = Image.open(file_name)
             img = img.resize(size)
             img.save(fr"images/{default_img}")
             self.img_update.setPixmap(QPixmap(fr"images/{default_img}"))
@@ -358,10 +358,10 @@ class AddEmployee(QWidget):
         """Upload employee image"""
         global default_img
         size = (120, 120)
-        self.file_name, ok = QFileDialog.getOpenFileName(self, "Upload Image", "", "Image Files(*.jpg *.png)")
+        file_name, ok = QFileDialog.getOpenFileName(self, "Upload Image", "", "Image Files(*.jpg *.png)")
         if ok:
-            default_img = Path(self.file_name).name
-            img = Image.open(self.file_name)
+            default_img = Path(file_name).name
+            img = Image.open(file_name)
             img = img.resize(size)
             img.save(fr"images/{default_img}")
             self.img_add.setPixmap(QPixmap(fr"images/{default_img}"))
