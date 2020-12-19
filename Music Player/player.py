@@ -5,17 +5,20 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import QSize, Qt, QTimer
 import random, time
-from pygame import mixer
+from pygame import mixer, error
 from mutagen.mp3 import MP3
+import style
 
 button_size = QSize(48, 48)
 
 music_list = []
 mixer.init()
-muted = False
-count = 0
-song_length = 0
-index_ = 0
+
+muted: bool = False  # ミュートフラグ
+
+count: int = 0  # 曲の経過時間
+song_length = 0  # 曲の長さ
+index_: int = 0  # music_listのindex
 
 
 class Player(QWidget):
@@ -37,6 +40,7 @@ class Player(QWidget):
         ####################Progress bar#######################
         self.progressbar = QProgressBar()
         self.progressbar.setTextVisible(False)
+        # self.progressbar.setStyleSheet(style.progress_bar_style())
 
         ########################Labels#########################
         self.song_timer_label = QLabel("00:00")
@@ -83,6 +87,7 @@ class Player(QWidget):
 
         ###############################Play list####################
         self.play_list = QListWidget()
+        self.play_list.setStyleSheet(style.play_list_style())
 
         ############################Timer###########################
         self.timer = QTimer()
@@ -98,6 +103,7 @@ class Player(QWidget):
         self.mute_button.clicked.connect(self.mute_sound)
         self.timer.timeout.connect(self.update_progressbar)
         self.previous_button.clicked.connect(self.play_previous)
+        self.next_button.clicked.connect(self.play_next)
 
     def layouts(self) -> None:
         """
@@ -122,7 +128,7 @@ class Player(QWidget):
         self.main_layout = QVBoxLayout()
         self.top_main_layout = QVBoxLayout()
         self.top_groupbox = QGroupBox("Music Player", self)
-        self.top_groupbox.setStyleSheet("background-color:#fcc324")
+        self.top_groupbox.setStyleSheet(style.group_box_style())
         self.top_layout = QHBoxLayout()
         self.middle_layout = QHBoxLayout()
         self.button_layout = QVBoxLayout()
@@ -157,9 +163,9 @@ class Player(QWidget):
     def add_sound(self) -> None:
         filepath, _ = QFileDialog.getOpenFileName(self, "Add Sound", "", "Sound Files (*.mp3 *.ogg *.wav)")
         filename = Path(filepath).name
-
-        self.play_list.addItem(filename)
-        music_list.append(filepath)
+        if filename != "":
+            self.play_list.addItem(filename)
+            music_list.append(filepath)
 
     def shuffle_play_list(self) -> None:
         random.shuffle(music_list)
@@ -168,36 +174,38 @@ class Player(QWidget):
             self.play_list.addItem(Path(song).name)
 
     def play_sound(self) -> None:
-        """run music"""
-        global count, song_length, index_
+        global count, index_, play_
 
         count = 0
         index_ = self.play_list.currentRow()
-        try:
-            play_music = music_list[index_]
-            mixer.music.load(play_music)
-            sound = MP3(play_music)
-            song_length = sound.info.length
-            song_length = round(song_length)
-            self.progressbar.setValue(0)
-            self.progressbar.setMaximum(song_length)
-
-            self.song_lenth_label.setText(time.strftime("/ %M:%S", time.gmtime(song_length)))
-
-            mixer.music.play()
-            self.timer.start()
-
-        except:
-            pass
+        self.playing()
 
     def play_previous(self):
-        """run music"""
-        global count, song_length, index_
+        global count, index_
 
         count = 0
-        index_ = self.play_list.currentRow()
+        items = self.play_list.count()
+        if index_ == 0:
+            index_ = items
+
         index_ -= 1
-        
+        self.playing()
+
+    def play_next(self):
+        global count, index_
+
+        count = 0
+        items = self.play_list.count()
+        index_ += 1
+
+        if index_ == items:
+            index_ = 0
+
+        self.playing()
+
+    def playing(self) -> None:
+        """play music"""
+        global song_length
         try:
             play_music = music_list[index_]
             mixer.music.load(play_music)
@@ -211,9 +219,10 @@ class Player(QWidget):
 
             mixer.music.play()
             self.timer.start()
-
-        except:
-            pass
+        except IndexError:
+            QMessageBox.warning(self, "Warning", "The music list does not exist.")
+        except error:
+            QMessageBox.critical(self, "Error", f"{sys.exc_info()[1]}")
 
     def set_volume(self) -> None:
         """Change volume"""
