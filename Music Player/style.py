@@ -29,3 +29,11 @@ def play_list_style() -> str:
         border:2px solid blue;
         }
     """
+
+
+def tool_button_style() -> str:
+    return """
+        QToolButton {
+        background-color:#90ee90;
+        }
+        """

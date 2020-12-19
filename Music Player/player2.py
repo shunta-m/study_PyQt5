@@ -15,8 +15,8 @@ music_list = []
 mixer.init()
 
 muted: bool = False  # ミュートフラグ
+pause: bool = False  # ポーズフラグ
 
-count: int = 0  # 曲の経過時間
 song_length = 0  # 曲の長さ
 index_: int = 0  # music_listのindex
 
@@ -43,6 +43,7 @@ class Player(QWidget):
         # self.progressbar.setStyleSheet(style.progress_bar_style())
 
         ########################Labels#########################
+        self.playing_song_label = QLabel("music：")
         self.song_timer_label = QLabel("00:00")
         self.song_lenth_label = QLabel("/ 00:00")
 
@@ -53,6 +54,7 @@ class Player(QWidget):
         self.add_button.setToolTip("Add a Song")  # ボタンにカーソルを持って行った時に表示される文字を設定
 
         self.shuffle_button = QToolButton()
+        self.shuffle_button.setStyleSheet(style.tool_button_style())
         self.shuffle_button.setIcon(QIcon(r"icons/shuffle.png"))
         self.shuffle_button.setIconSize(button_size)
         self.shuffle_button.setToolTip("Shuffle The list")
@@ -62,10 +64,10 @@ class Player(QWidget):
         self.previous_button.setIconSize(button_size)
         self.previous_button.setToolTip("Play Precious")
 
-        self.play_button = QToolButton()
-        self.play_button.setIcon(QIcon(r"icons/play.png"))
-        self.play_button.setIconSize(QSize(64, 64))
-        self.play_button.setToolTip("Play")
+        self.play_pause_button = QToolButton()
+        self.play_pause_button.setIcon(QIcon(r"icons/play.png"))
+        self.play_pause_button.setIconSize(QSize(64, 64))
+        self.play_pause_button.setToolTip("Play")
 
         self.next_button = QToolButton()
         self.next_button.setIcon(QIcon(r"icons/next.png"))
@@ -97,9 +99,10 @@ class Player(QWidget):
         """Connecting function"""
         self.add_button.clicked.connect(self.add_sound)
         self.shuffle_button.clicked.connect(self.shuffle_play_list)
-        self.play_button.clicked.connect(self.play_sound)
+        self.play_pause_button.clicked.connect(self.play_pause_sound)
         self.play_list.doubleClicked.connect(self.play_sound)
-        self.volume_slider.valueChanged.connect(self.set_volume)
+        self.volume_slider.sliderPressed.connect(self.set_volume)
+        self.volume_slider.sliderMoved.connect(self.set_volume)
         self.mute_button.clicked.connect(self.mute_sound)
         self.timer.timeout.connect(self.update_progressbar)
         self.previous_button.clicked.connect(self.play_previous)
@@ -108,6 +111,7 @@ class Player(QWidget):
     def layouts(self) -> None:
         """
         Creating layouts
+
         Other Parameters
         ----------
         main_layout: QVBoxLayout
@@ -126,23 +130,30 @@ class Player(QWidget):
         ############################Createing layouts###########################
         self.main_layout = QVBoxLayout()
         self.top_main_layout = QVBoxLayout()
-        self.top_groupbox = QGroupBox("Music Player", self)
+        self.top_groupbox = QGroupBox("", self)
+        self.top_groupbox.setAlignment(Qt.AlignHCenter)
         self.top_groupbox.setStyleSheet(style.group_box_style())
-        self.top_layout = QHBoxLayout()
+        self.top_layout = QVBoxLayout()
+        self.top_bottom_layout = QHBoxLayout()
         self.middle_layout = QHBoxLayout()
         self.button_layout = QVBoxLayout()
 
         ###################################Adding Widgets#########################
         #########################Top layout widgets###############################
-        self.top_layout.addWidget(self.progressbar)
-        self.top_layout.addWidget(self.song_timer_label)
-        self.top_layout.addWidget(self.song_lenth_label)
+        self.top_layout.addStretch()
+        self.top_layout.addWidget(self.playing_song_label)
+        self.top_layout.addLayout(self.top_bottom_layout)
+
+        ########################Top bottom widgets###########################
+        self.top_bottom_layout.addWidget(self.progressbar)
+        self.top_bottom_layout.addWidget(self.song_timer_label)
+        self.top_bottom_layout.addWidget(self.song_lenth_label)
 
         #########################Middle layout widgets############################
         self.middle_layout.addStretch()
         self.middle_layout.addWidget(self.add_button)
         self.middle_layout.addWidget(self.shuffle_button)
-        self.middle_layout.addWidget(self.play_button)
+        self.middle_layout.addWidget(self.play_pause_button)
         self.middle_layout.addWidget(self.previous_button)
         self.middle_layout.addWidget(self.next_button)
         self.middle_layout.addWidget(self.volume_slider)
@@ -163,8 +174,11 @@ class Player(QWidget):
         filepath, _ = QFileDialog.getOpenFileName(self, "Add Sound", "", "Sound Files (*.mp3 *.ogg *.wav)")
         filename = Path(filepath).name
         if filename != "":
-            self.play_list.addItem(filename)
-            music_list.append(filepath)
+            if filepath not in music_list:
+                self.play_list.addItem(filename)
+                music_list.append(filepath)
+            else:
+                QMessageBox.information(self, "Information", "This music already exists in the play list.")
 
     def shuffle_play_list(self) -> None:
         random.shuffle(music_list)
@@ -173,11 +187,28 @@ class Player(QWidget):
             self.play_list.addItem(Path(song).name)
 
     def play_sound(self) -> None:
-        global count, index_
+        global index_
 
-        count = 0
         index_ = self.play_list.currentRow()
         self.playing()
+
+    def play_pause_sound(self) -> None:
+        global index_, pause
+
+        if mixer.music.get_busy() == 0:
+            index_ = self.play_list.currentRow()
+            self.playing()
+        else:
+            if pause is False:
+                pause = True
+                mixer.music.pause()
+                self.play_pause_button.setIcon(QIcon(r"icons/play.png"))
+                self.play_pause_button.setToolTip("Play")
+            else:
+                pause = False
+                mixer.music.unpause()
+                self.play_pause_button.setIcon(QIcon(r"icons/pause.png"))
+                self.play_pause_button.setToolTip("Pause")
 
     def play_previous(self):
         global count, index_
@@ -214,17 +245,29 @@ class Player(QWidget):
             self.progressbar.setValue(0)
             self.progressbar.setMaximum(song_length)
 
+            self.playing_song_label.setText(f"music：{play_music.split('/')[-1]}")
             self.song_lenth_label.setText(time.strftime("/ %M:%S", time.gmtime(song_length)))
 
             mixer.music.play()
             self.timer.start()
+
+            self.play_pause_button.setIcon(QIcon(r"icons/pause.png"))
+            self.play_pause_button.setToolTip("Pause")
+
         except IndexError:
-            QMessageBox.warning(self, "Warning", "The music list does not exist.")
+            QMessageBox.warning(self, "Warning", "There are no music in the play list.")
         except error:
             QMessageBox.critical(self, "Error", f"{sys.exc_info()[1]}")
 
     def set_volume(self) -> None:
         """Change volume"""
+        global muted
+
+        if muted is True:
+            muted = False
+            self.mute_button.setIcon(QIcon(r"icons/mute.png"))
+            self.mute_button.setToolTip("Mute")
+
         self.volume = self.volume_slider.value()
         mixer.music.set_volume(self.volume / 100)
 
@@ -245,13 +288,14 @@ class Player(QWidget):
             self.volume_slider.setValue(70)
 
     def update_progressbar(self) -> None:
-        global count, song_length
-        count += 1
-        self.progressbar.setValue(count)
-        min_, sec_ = divmod(count, 60)
-        self.song_timer_label.setText(time.strftime("%M:%S", time.gmtime(count)))
-        if count == song_length:
+        if mixer.music.get_busy() == 1:
+            pos = mixer.music.get_pos() / 1000
+            self.progressbar.setValue(round(pos))
+            self.song_timer_label.setText(time.strftime("%M:%S", time.gmtime(pos)))
+        else:
             self.timer.stop()
+            self.progressbar.setValue(song_length)
+            self.song_timer_label.setText(time.strftime("%M:%S", time.gmtime(song_length)))
 
 
 def main():
