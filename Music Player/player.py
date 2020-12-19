@@ -174,7 +174,7 @@ class Player(QWidget):
             self.play_list.addItem(Path(song).name)
 
     def play_sound(self) -> None:
-        global count, index_, play_
+        global count, index_
 
         count = 0
         index_ = self.play_list.currentRow()
