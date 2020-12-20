@@ -4,6 +4,7 @@ from typing import Optional
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import QSize, Qt, QTimer
+import qdarkstyle
 import random, time
 from pygame import mixer, error
 from mutagen.mp3 import MP3
@@ -25,7 +26,7 @@ class Player(QWidget):
     def __init__(self, parent: Optional[QWidget] = None):
         super(Player, self).__init__(parent=parent)
         self.setWindowTitle("Music Player")
-        self.setGeometry(450, 150, 600, 500)
+        self.setGeometry(450, 150, 500, 350)
         self.ui()
         self.show()
 
@@ -43,15 +44,21 @@ class Player(QWidget):
         # self.progressbar.setStyleSheet(style.progress_bar_style())
 
         ########################Labels#########################
-        self.playing_song_label = QLabel("music：")
+        self.playing_song_label = QLabel("music:")
+        self.playing_song_label.setStyleSheet("font:15pt Times;")
         self.song_timer_label = QLabel("00:00")
         self.song_lenth_label = QLabel("/ 00:00")
 
         ####################Buttons###########################
         self.add_button = QToolButton()
         self.add_button.setIcon(QIcon(r"icons/add.png"))
-        self.add_button.setIconSize(button_size)
+        self.add_button.setIconSize(QSize(24, 24))
         self.add_button.setToolTip("Add a Song")  # ボタンにカーソルを持って行った時に表示される文字を設定
+
+        self.delete_button = QToolButton()
+        self.delete_button.setIcon(QIcon(r"icons/delete.png"))
+        self.delete_button.setIconSize(QSize(24, 24))
+        self.delete_button.setToolTip("Delete a Song")  # ボタンにカーソルを持って行った時に表示される文字を設定
 
         self.shuffle_button = QToolButton()
         self.shuffle_button.setStyleSheet(style.tool_button_style())
@@ -89,7 +96,7 @@ class Player(QWidget):
 
         ###############################Play list####################
         self.play_list = QListWidget()
-        self.play_list.setStyleSheet(style.play_list_style())
+        self.play_list.setStyleSheet(style.play_list_style2())
 
         ############################Timer###########################
         self.timer = QTimer()
@@ -130,12 +137,13 @@ class Player(QWidget):
         ############################Createing layouts###########################
         self.main_layout = QVBoxLayout()
         self.top_main_layout = QVBoxLayout()
-        self.top_groupbox = QGroupBox("", self)
+        self.top_groupbox = QGroupBox("Music Player", self)
         self.top_groupbox.setAlignment(Qt.AlignHCenter)
-        self.top_groupbox.setStyleSheet(style.group_box_style())
+        self.top_groupbox.setStyleSheet(style.group_box_style2())
         self.top_layout = QVBoxLayout()
         self.top_bottom_layout = QHBoxLayout()
         self.middle_layout = QHBoxLayout()
+        self.list_layout = QHBoxLayout()
         self.button_layout = QVBoxLayout()
 
         ###################################Adding Widgets#########################
@@ -150,24 +158,29 @@ class Player(QWidget):
         self.top_bottom_layout.addWidget(self.song_lenth_label)
 
         #########################Middle layout widgets############################
-        self.middle_layout.addStretch()
-        self.middle_layout.addWidget(self.add_button)
-        self.middle_layout.addWidget(self.shuffle_button)
+        # self.middle_layout.addStretch()
+        # self.middle_layout.addWidget(self.add_button)
         self.middle_layout.addWidget(self.play_pause_button)
         self.middle_layout.addWidget(self.previous_button)
         self.middle_layout.addWidget(self.next_button)
+        self.middle_layout.addWidget(self.shuffle_button)
         self.middle_layout.addWidget(self.volume_slider)
         self.middle_layout.addWidget(self.mute_button)
         self.middle_layout.addStretch()
 
-        ##############################Button layout widget#########################
-        self.button_layout.addWidget(self.play_list)
+        ##############################list layout widget#########################
+        self.list_layout.addWidget(self.play_list)
+        self.list_layout.addLayout(self.button_layout)
+        ###########################button layout widget########################
+        self.button_layout.addWidget(self.add_button)
+        self.button_layout.addWidget(self.delete_button)
+        self.button_layout.addStretch()
 
         self.top_main_layout.addLayout(self.top_layout)
         self.top_main_layout.addLayout(self.middle_layout)
         self.top_groupbox.setLayout(self.top_main_layout)
         self.main_layout.addWidget(self.top_groupbox, 25)
-        self.main_layout.addLayout(self.button_layout, 75)
+        self.main_layout.addLayout(self.list_layout, 75)
         self.setLayout(self.main_layout)
 
     def add_sound(self) -> None:
@@ -245,7 +258,7 @@ class Player(QWidget):
             self.progressbar.setValue(0)
             self.progressbar.setMaximum(song_length)
 
-            self.playing_song_label.setText(f"music：{play_music.split('/')[-1]}")
+            self.playing_song_label.setText(f"music:{play_music.split('/')[-1]}")
             self.song_lenth_label.setText(time.strftime("/ %M:%S", time.gmtime(song_length)))
 
             mixer.music.play()
@@ -300,7 +313,9 @@ class Player(QWidget):
 
 def main():
     app = QApplication(sys.argv)
+    dark_stylesheet = qdarkstyle.load_stylesheet_pyqt5()
     window = Player(parent=None)
+    window.setStyleSheet(dark_stylesheet)
     sys.exit(app.exec_())
 
 

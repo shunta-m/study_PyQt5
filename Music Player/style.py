@@ -9,6 +9,15 @@ def group_box_style() -> str:
         }
     """
 
+def group_box_style2() -> str:
+    return """
+        QGroupBox {
+        font:15pt Times;
+        border:2px solid gray;
+        border-radius:15px;
+        }
+    """
+
 
 def progress_bar_style() -> str:
     return """
@@ -27,6 +36,15 @@ def play_list_style() -> str:
         background-color:#fff;
         border-radius:10px;
         border:2px solid blue;
+        }
+    """
+
+
+def play_list_style2() -> str:
+    return """
+        QListWidget {
+        border-radius:10px;
+        border:2px solid gray;
         }
     """
 
