@@ -1,6 +1,7 @@
 import sys
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
+from PyQt5.QtCore import Qt
 
 
 class Main(QMainWindow):
@@ -15,7 +16,24 @@ class Main(QMainWindow):
         self.show()
 
     def ui(self):
-        pass
+        self.set_toolbar()
+
+    def set_toolbar(self):
+        self.tb = self.addToolBar("Tool Bar")
+        self.tb.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
+        ##################Toolbar Button####################
+        #################Add Product######################
+        self.add_product = QAction(QIcon(r"icons/add.png"), "Add Product", self)
+        self.tb.addAction(self.add_product)
+        self.tb.addSeparator()
+        ####################Add Member######################
+        self.add_member = QAction(QIcon(r"icons/users.png"), "Add Members", self)
+        self.tb.addAction(self.add_member)
+        self.tb.addSeparator()
+        #######################Sell Product############################
+        self.sell_product = QAction(QIcon(r"icons/sell.png"), "Sell Product", self)
+        self.tb.addAction(self.sell_product)
+        self.tb.addSeparator()
 
 
 def main():
